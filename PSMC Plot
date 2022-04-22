@@ -1,0 +1,29 @@
+#!/bin/bash
+
+#SBATCH --nodes=1
+#SBATCH --mem=64000
+#SBATCH --job-name=plot
+#SBATCH --partition=long
+
+# load the psmc locally
+module load SAMtools/1.12-GCC-10.2.0
+module load BCFtools/1.11-GCC-10.2.0
+
+# concatenate the individual .psmc files that I wish to plot using: cat sample1.psmc sample2.psmc sa$
+# plot multi line mode: psmc_plot.pl sample1, sample2, sample N [prefix] combined.psmc
+# use mutation rate based on Naremi 2019, u= 0.5e-8 and generation time of 5 years
+
+FQ2P="/data/wildcru/kebl7066/slurm/PSMC/Software/psmc/utils/fq2psmcfa"
+Psmc="/data/wildcru/kebl7066/Bam_Files/Fastq"
+Plot="/data/wildcru/kebl7066/slurm/PSMC/Software/utils"
+
+# run plot script for a whole loop 
+# this code works 
+# this code will produce txt. file that can be inputted to R to plot multiline
+for i in $Psmc/*.fastq
+do
+$Plot/"psmc_plot.pl" -R -u 0.5e-8 -g 5 -p $i.plot.psmc $i.combined.psmc
+done
+
+
+
