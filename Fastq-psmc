@@ -1,27 +1,32 @@
+
 #!/bin/bash
 
 #SBATCH --nodes=1
-#SBATCH --mem=64000
-#SBATCH --job-name=consensus
-#SBATCH --partition=medium
+#SBATCH --mem=100000
+#SBATCH --job-name=psmc_boot
+#SBATCH --partition=long
 
 # load the psmc locally
 module load SAMtools/1.12-GCC-10.2.0
 module load BCFtools/1.11-GCC-10.2.0
 
 FQ2P="/data/wildcru/kebl7066/slurm/PSMC/Software/psmc/utils/fq2psmcfa"
-CL_15fq="/data/wildcru/kebl7066/slurm/PSMC/CL_15.fastq"
+FASTQ="/data/wildcru/kebl7066/Bam_Files/Fastq"
 PSMC="/data/wildcru/kebl7066/slurm/PSMC/Software/psmc/psmc"
-SPLITFA="/data/wildcru/kebl7066/slurm/PSMC/Software/psmc/utils/splitfa.o"
+SPLITFA="/data/wildcru/kebl7066/slurm/PSMC/Software/psmc/utils/splitfa"
 
 # need to convert fastq file into input format for psmc
 # use fq2psmcfa function found in utils folder
-# to run bootstrapping, run splitfa additionally to split the long chromosome into smaller fragments$
+# run loop over all files in Fastq folder
 
-$FQ2P $CL_15fq >CL_15.psmcfa
-$SPLITFA CL_15.psmcfa >split_CL15.psmcfa
-$PSMC -N25 -t15 -r5 -p "4+25*2+4+6" -o CL_15.psmc split_CL15.psmcfa 
-seq 100| xargs -i echo $PSMC -N25 -t15 -r5 -b -p "4+25*2+4+6" \ -o round -{}.psmc split.fa | sh
+for i in $FASTQ/*.fastq
+do 
+$FQ2P $i > $i.psmcfa
+$SPLITFA $i.psmcfa > $i.split.psmcfa
+$PSMC -N25 -t15 -r5 -p "4+25*2+4+6" -o $i.psmc $i.psmcfa
+seq 100 | xargs -P 10 -lz  $PSMC -N25 -t15 -r5 -p "4+25*2+4+6" -o round-{}.psmc split.psmcfa
+done
+
 
 
 
