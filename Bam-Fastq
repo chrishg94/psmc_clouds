@@ -1,0 +1,22 @@
+#!/bin/bash
+
+#SBATCH --nodes=1
+#SBATCH --mem=64000
+#SBATCH --job-name=consensus
+#SBATCH --partition=long
+
+# load the code samtools and bcftools
+module load SAMtools/1.12-GCC-10.2.0
+module load BCFtools/1.11-GCC-10.2.0
+
+# input file for all BAM files
+BAM=/data/wildcru/kebl7066/Bam_Files
+REF=/data/wildcru/kebl7066/Bam_Files/Neofelis_neb_HiC.fasta
+
+# loop over all BAM files in the folder
+# create fastq sequence and consensus file for each bam file
+
+for i in  $BAM/CLMB9B4.final.bam $BAM/ND_20_1.final.bam
+do
+bcftools mpileup -f $REF $i |bcftools call -c | vcfutils.pl vcf2fq > $i.fastq
+done
